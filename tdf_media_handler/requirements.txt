@@ -1,0 +1,6 @@
+obs-websocket-py
+pyautogui
+notifypy
+flask
+pywin32
+pywinauto
