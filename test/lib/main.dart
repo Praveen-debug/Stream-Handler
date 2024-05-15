@@ -8,8 +8,6 @@ void main() {
 
 class MyApp extends StatelessWidget {
   @override
-  final SocketConnection _socketConnection =
-      SocketConnection('192.168.1.4', 5555);
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Socket Example',
@@ -38,6 +36,8 @@ Future<void> connect_to_server(SocketConnection _socketConnection) async {
 }
 
 class _HomePageState extends State<HomePage> {
+  final SocketConnection _socketConnection =
+      SocketConnection('192.168.1.4', 5555);
   @override
   void initState() {
     super.initState();
