@@ -2,34 +2,50 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:math' as math;
 
+typedef void ConnectionCallback(bool isConnected);
+typedef void ServerDataCallback(String data);
+
 class SocketConnection {
   Socket? _socket;
   final String _serverAddress;
   final int _serverPort;
 
+  ConnectionCallback? _connectionCallback;
+  ServerDataCallback? _serverDataCallback;
+
   SocketConnection(this._serverAddress, this._serverPort);
 
-  Future<bool> connect() async {
+  void setConnectionCallback(ConnectionCallback callback) {
+    _connectionCallback = callback;
+  }
+
+  void setServerDataCallback(ServerDataCallback callback) {
+    _serverDataCallback = callback;
+  }
+
+  Future<void> connect() async {
+    print("Trying to connect to server");
     try {
       _socket = await Socket.connect(_serverAddress, _serverPort,
-          timeout: Duration(seconds: 5));
+          timeout: const Duration(seconds: 5));
       print('Connected to server: $_serverAddress:$_serverPort');
       _socket?.listen(
         _handleServerData,
         onError: _handleError,
         onDone: _handleDone,
       );
-      print("Ayoo");
-      return true;
+      _connectionCallback?.call(true);
     } catch (e) {
-      print('Failed to connect to server: $e');
-      return false;
+      print('Failed to connect to server, Trying to reconnect');
+      _connectionCallback?.call(false);
+      connect();
     }
   }
 
   void _handleServerData(data) {
     final serverResponse = String.fromCharCodes(data);
     print('Server response: $serverResponse');
+    _serverDataCallback?.call(serverResponse);
     // Handle the server response as needed
   }
 
@@ -40,6 +56,8 @@ class SocketConnection {
   void _handleDone() {
     print('Socket closed');
     _socket?.destroy();
+    _connectionCallback?.call(false);
+    connect();
   }
 
   void sendDataToServer(String data) {

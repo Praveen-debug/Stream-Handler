@@ -15,7 +15,6 @@ DISCONNECT_MESSAGE = "!DIS"
 OBS_CONNECTION = False
 
 # Socket Settings
-
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 clients = [] 
@@ -23,31 +22,15 @@ obs_client = None
 
 def disconnect_obs_handler():
     OBS_CONNECTION = False
-
-def connect_to_obs():
-    try:
-        obs_client = obsws("192.168.1.5", 4444, "Iphonex")
-        obs_client.connect()
-        obs_client.on_disconnect = disconnect_obs_handler
-        OBS_CONNECTION = True
-        return obs_client
-    except Exception as e:
-        return False
     
 def send_data(client, msg):
-    message = str(msg).encode(FORMAT)
-    msg_len = len(message)
-    send_len = str(msg_len).encode(FORMAT)
-    send_len += b' ' * (HEADER - len(send_len))
-    print(send_len)
-    # client.send(send_len)
-    client.send(message)
+    client.send(msg)
 
 def handle_client(con, addr):
     print(f"[NEW CONNECTION] From {addr}")
     clients.append(con) 
     connected = True
-    send_data(con, get_data())
+    send_data(con, get_data().encode(FORMAT))
     while connected:
         msg_len = con.recv(HEADER).decode(FORMAT)
         if msg_len:
@@ -81,7 +64,7 @@ def handle_client(con, addr):
             else:
                 print(f"[GOT MESSAGE FROM CLIENT {addr}, {msg}]")
                 continue
-            send_data(con, response)
+            send_data(con, response.encode(FORMAT))
 
 
     con.close()
@@ -101,7 +84,7 @@ def updates_handler():
         if last_data != data:
             last_data = data
             for client in clients:
-                send_data(client, last_data)
+                send_data(client, get_data().encode(FORMAT))
                 continue
         time.sleep(0.1)
 

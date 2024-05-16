@@ -6,9 +6,10 @@ import threading
 import subprocess
 import threading
 import time
+import json
 
 OBS = False
-OBS_CLIENT = obsws("192.168.1.16", 4444, "Iphonex")
+OBS_CLIENT = obsws("192.168.1.4", 4444, "Iphonex")
 
 def connect_to_obs():
     global OBS, OBS_CLIENT
@@ -82,21 +83,40 @@ def get_scenes():
 def start_recording():
     try:
         response = OBS_CLIENT.call(requests.StartRecording())
-        return str(response.getstatus())
+        while True:
+            rs = get_recording_status()
+            if rs.lower() == "true":
+                return str(response.getstatus())
+            else:
+                time.sleep(0.1)
+                continue
+                
     except Exception as e:
         return False
     
 def stop_recording():
     try:
         response = OBS_CLIENT.call(requests.StopRecording())
-        return str(response.getstatus())
+        while True:
+            rs = get_recording_status()
+            if rs.lower() == "false":
+                return str(response.getstatus())
+            else:
+                time.sleep(0.1)
+                continue
     except Exception as e:
         return False
 
 def stop_streaming():
     try:
         response = OBS_CLIENT.call(requests.StopStreaming())
-        return str(response.getStatus())
+        while True:
+            rs = get_streaming_status()
+            if rs.lower() == "false":
+                return str(response.getstatus())
+            else:
+                time.sleep(0.1)
+                continue
     except Exception as e:
         return False
 
@@ -170,31 +190,32 @@ def send_notification(message):
     notification = Notify()
     notification.title = f"Notification"
     notification.message = f"{message}"
-    notification.icon = "E:/Chruch Logo/Ico image of logo.ico"
+    notification.icon = "./Logo.ico"
     notification.application_name = 'Tdf Media Handler'
 
     notification.send()
     return "Sent notification"
 
 def get_data():
+    data = ""
     if OBS:
         data = {
             "obs": "true",
             "recording": str(get_recording_status()).lower(),
             "streaming": str(get_streaming_status()).lower(),
-            "current_scene": str(get_current_scene()).lower(),
-            "scenes": str(get_scenes()).lower(),
-            "windows": str(get_open_windows()).lower(),
+            "current_scene": str(get_current_scene()),
+            "scenes": str(get_scenes()).replace("[", "").replace("]", ""),
+            "windows": str(get_open_windows()).lower().replace("[", "").replace("]", ""),
             "presenter": str(presenter()).lower(),
             "presenting": str(presenting()).lower(),
         }
-        return data
     else:
         data = {
             "obs": "false",
-            "windows": str(get_open_windows()).lower(),
+            "windows": (str(get_open_windows()).lower()).replace("[", "").replace("]", ""),
             "presenter": str(presenter()).lower(),
             "presenting": str(presenting()).lower(),
         }
-        return data
+    json_data = json.dumps(data)
+    return json_data
 
