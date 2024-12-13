@@ -2,9 +2,6 @@
 
 OBS Remote Control is an innovative solution that allows wireless control of the popular Open Broadcaster Software (OBS) recording and streaming functions using an Android device. It aims to simplify the streaming experience for IRL (In Real Life) streamers, small-scale streamers (such as weddings, churches, and NGOs), and anyone who needs to control their streams remotely.
 
-NOTE:-
-OBS Remote Control is a custom solution developed for a client, so it was customized accordingly. Please feel free to make changes to it. Thanks.
-
 ## Features
 
 - Change scenes in OBS
